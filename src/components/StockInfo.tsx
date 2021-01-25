@@ -1,8 +1,8 @@
 import React, { useState,useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box,TextField,Container,Button,Table,TableBody,TableRow,TableCell } from '@material-ui/core';
-import API from '../DAL/StockAPI'
-
+import API from '../DAL/StockAPI';
+import AuthAPI from '../DAL/AuthAPI';
 
 
 const useStyles = makeStyles({
@@ -13,7 +13,6 @@ const useStyles = makeStyles({
     ContainerStyle : {
     },
     StockTableStyle : {
-        justifyContent:"center"
     }
 });
 
@@ -32,19 +31,25 @@ function StockInfo(): JSX.Element{
 
     type PriceList = Record<string,number>; 
 
-    async function LookUpStock(){
-        if(!tickerInputRef.current){
+    async function LookUpStock() {
+        if(!tickerInputRef.current || !tickerInputRef.current.value){
             console.log('No stock input');
             return;
         }
         let result = await API.GetCurrentPrice(tickerInputRef.current.value);
-        setStockPrices(
-            {
-                "Current Price" : result.c,
-                "Today's Low Price" : result.l,
-                "Today's High Price" : result.h    
-            }
-        )
+        if( result!=undefined){
+            setStockPrices(
+                {
+                    "Current Price" : result.c,
+                    "Today's Low Price" : result.l,
+                    "Today's High Price" : result.h    
+                }
+            )
+        }
+    }
+
+    async function SignOut() {
+        await AuthAPI.SignOut();
     }
 
     function buildPriceTable(args:PriceList):JSX.Element{
@@ -65,8 +70,28 @@ function StockInfo(): JSX.Element{
     return (
         <Box className={styles.ContainerStyle}>
             <Container className={styles.SearchBarStyle}>
-                <TextField fullWidth={true} inputRef={tickerInputRef} label="Stock Ticker" variant="outlined"/>
-                <Button variant="contained" color="primary" onClick={LookUpStock}>Search</Button>
+                <TextField
+                    onKeyPress = {(t) => { if(t.key=="Enter") {LookUpStock()} }}
+                    fullWidth={true}
+                    inputRef={tickerInputRef} 
+                    label="Stock Ticker"
+                    variant="outlined"
+                />
+                <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={LookUpStock}
+                >
+                    Search
+                </Button>
+                <Button 
+                    variant="contained" 
+                    color="secondary" 
+                    onClick={SignOut}
+                >
+                    Logout
+                </Button>
+
             </Container>
             <Container className={styles.StockTableStyle}>
                 {buildPriceTable(stockPrices)}

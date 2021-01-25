@@ -1,9 +1,8 @@
 import ReactDOM from 'react-dom';
-import React from 'react';
-import StockInfo from './components/StockInfo';
+import App from './components/App';
 
 ReactDOM.render(
-    <StockInfo/>,
+    <App/>,
     document.getElementById('root')
 );
   
