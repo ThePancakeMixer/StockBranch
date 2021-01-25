@@ -1,50 +1,77 @@
 import React, { useState,useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { TextField,Container,Button } from '@material-ui/core';
+import { Box,TextField,Container,Button,Table,TableBody,TableRow,TableCell } from '@material-ui/core';
 import API from '../DAL/StockAPI'
 
 
 
 const useStyles = makeStyles({
-    StockInfo : {
-        width : '100vw',
-    },
-    SearchBar : {
+    SearchBarStyle : {
         display : "flex",
-        justifyContent : 'center'
+        justifyContent:"center"
     },
-    CurrentPrice : {
-        display : "flex",
-        justifyContent : 'center'
+    ContainerStyle : {
+    },
+    StockTableStyle : {
+        justifyContent:"center"
     }
 });
 
 function StockInfo(): JSX.Element{
 
     const styles = useStyles();
-    const [currentPriceStr, setCurrentPriceStr] = useState(0);
 
     const tickerInputRef = useRef<HTMLInputElement>(null);
+    const [stockPrices,setStockPrices] = useState<PriceList>(
+        {
+            "Current Price" : 0,
+            "Low Price" : 0,
+            "High Price" : 0
+        }
+    );
 
-    const LookUpStock = async function(){
+    type PriceList = Record<string,number>; 
+
+    async function LookUpStock(){
         if(!tickerInputRef.current){
             console.log('No stock input');
             return;
         }
         let result = await API.GetCurrentPrice(tickerInputRef.current.value);
-        setCurrentPriceStr(result)    
+        setStockPrices(
+            {
+                "Current Price" : result.c,
+                "Today's Low Price" : result.l,
+                "Today's High Price" : result.h    
+            }
+        )
     }
 
+    function buildPriceTable(args:PriceList):JSX.Element{
+        var rows = [];
+        for(var key in args){
+            rows.push(
+                <TableRow>
+                    <TableCell>{key}</TableCell>
+                    <TableCell>{args[key]}</TableCell>
+                </TableRow>
+            )
+        }   
+        return <Table><TableBody>{rows}</TableBody></Table>
+
+    }
+
+
     return (
-        <Container className={styles.StockInfo}>
-            <Container className={styles.SearchBar}>
-                <TextField inputRef={tickerInputRef} label="Stock Ticker" variant="outlined"/>
+        <Box className={styles.ContainerStyle}>
+            <Container className={styles.SearchBarStyle}>
+                <TextField fullWidth={true} inputRef={tickerInputRef} label="Stock Ticker" variant="outlined"/>
                 <Button variant="contained" color="primary" onClick={LookUpStock}>Search</Button>
             </Container>
-            <Container className={styles.CurrentPrice}>
-                Current Price : {currentPriceStr}
+            <Container className={styles.StockTableStyle}>
+                {buildPriceTable(stockPrices)}
             </Container>
-        </Container>
+        </Box>
 
     )
 }
