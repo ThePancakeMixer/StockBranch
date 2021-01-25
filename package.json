@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate",
+  "name": "stockbranch",
   "version": "1.0.0",
-  "description": "boilerplate for react projects",
+  "description": "being able to branch a portfolio is the mvp we are going for with a cx",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",
